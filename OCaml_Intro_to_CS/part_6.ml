@@ -135,17 +135,16 @@ let generate_tests n =
   Part 4
   *)
 
-type 'a set = {'a};;
+type 'a set = 'a list;;
 
-let empty_set 'a = [];;
+let empty_set : 'a set = [];;
 
-let singleton a =
-  {a};;
+let singleton (x : 'a): 'a set = [x];;
 
 let element_of a lst =
   let rec aux = function
-    | [] -> False
-    | h :: t -> if h = a then True else aux t
+    | [] -> false
+    | h :: t -> if h = a then true else aux t
   in
   aux lst
 ;;
@@ -171,4 +170,14 @@ let intersection s1 s2 =
 let s1 = [1 ; 2; 3; 4; 5];;
 let s2 = [4; 5; 3; 2; 0];;
 
+let union_res = union s1 s2;;
+let intersection_res = intersection s1 s2;;
+
+let () = 
+  Printf.printf "Union of s1 and s2: ";;
+  print_list union_res;;
+
+let () = 
+  Printf.printf "Intersection of s1 and s2: ";;
+  print_list intersection_res;;
 
