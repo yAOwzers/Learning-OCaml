@@ -67,3 +67,34 @@ let () =
   in
   Printf.printf "%s\n" (show_tree result)
 ;;
+
+(* Suppose you have an ordered/sorted tree. Please write
+listify : ‘a tree -> ‘a list
+that creates a sorted list. *)
+
+
+let listify : 'a tree -> 'a list = 
+  let rec aux acc = function 
+  | Leaf -> acc
+  | Node (l, x, r) -> aux (x :: (aux acc r)) l
+in
+aux []
+;;
+
+let () = 
+  let tree = Node (Node (Leaf, 1, Leaf), 2, Node (Leaf, 3, Leaf))
+  in
+  let result = listify tree
+  in 
+  print_list result
+;;
+
+(* Suppose you have a sorted list. Please write the function
+treeify : ‘a list -> ‘a tree that builds a perfectly balanced sorted tree (other than perhaps a few
+missing leaves in the bottom level if there are not enough elements to make a perfectly balanced
+tree). For example: 
+let t = treeify
+[1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20;21;22;23;24;25;26;27;28;29;30;31]
+*)
+
+
