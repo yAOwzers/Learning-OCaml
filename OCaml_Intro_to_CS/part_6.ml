@@ -116,20 +116,46 @@ and the last n characters should be the appropriate matching closed parentheses.
 here is the output for my function when n=3:
 *)
 
-let open_brackets = [ '(' ; '{' ; '[' ];;
-(*
+let combinations n = 
+  let rec aux acc k =
+    if k = 0 then acc
+    else
+      aux (List.concat [
+        List.map (fun l -> '(' :: l) acc;
+        List.map (fun l -> '{' :: l) acc;
+        List.map (fun l -> '[' :: l) acc
+      ]) (k - 1)
+    in
+    aux [[]] n
+  ;;
+
+let matching_parenthesis open_parenthesis =
+  List.map (function
+  | '(' -> ')'
+  | '{' -> '}'
+  | '[' -> ']'
+  | _ -> failwith "Invalid character"
+  ) open_parenthesis
+;;
+
+
 let generate_tests n =
   (* first to have a list of all brackets, then run through the various permutations of the brackets in a BFS way *)
   (* in python it will be something like def backtrack(temp, list, result) *)
-  let match_brackets = function
-    | '(' -> ')'
-    | '{' -> '}'
-    | '[' -> ']'
-  in
-  let rec aux acc num = 
+  let open_combinations = combinations n in
+  List.map (fun open_parenthesis ->
+    open_parenthesis @ (matching_parenthesis open_parenthesis)
+  ) open_combinations
+  ;;
 
-;;
-*)
+let () =
+  let tests = generate_tests 3 in 
+  Printf.printf "Total number of combinations: %d\n" (List.length tests);
+  List.iter (fun test -> 
+    List.iter (Printf.printf "%c") test;
+    print_newline()
+  ) tests
+  ;;
 
 (* 
   Part 4
