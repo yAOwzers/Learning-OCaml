@@ -148,6 +148,17 @@ let generate_tests n =
   ) open_combinations
   ;;
 
+(* let string_of_char_list cl =
+  String.concat "" (List.map (String.make 1) cl)
+;;
+
+let print_combinations n =
+  let combs = combinations n in
+  List.iter (fun comb -> print_endline (string_of_char_list comb)) combs
+;;
+
+print_combinations 3;; *)
+
 let () =
   let tests = generate_tests 3 in 
   Printf.printf "Total number of combinations: %d\n" (List.length tests);
