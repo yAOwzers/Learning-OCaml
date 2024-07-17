@@ -148,6 +148,20 @@ let dictionary_to_file filename dict =
 dictionary_to_file "file.txt" (read_dict ());; *)
 
 let save_tree (filename : string) (tr :'a tree) =
+  let rec save_node ch = function
+    | Lf -> output_string ch "Lf\n"
+    | Br (x, l, r) ->
+      Printf.fprintf ch "Br ( %d ,\n" x;
+      save_node ch l;
+      save_node ch r;
+      (* output_string ch ")\n" *)
+    in
+    let channel = open_out filename in
+    save_node channel tr;
+    close_out channel
+  ;;
+
+(*   
   let entry_to_channel ch k =
     output_string ch (string_of_int k);
     output_char ch '\n';
@@ -162,7 +176,8 @@ let save_tree (filename : string) (tr :'a tree) =
   let channel = open_out filename in
   read_tree channel tr;
   close_out channel
-;;
+;; *)
+
 
 save_tree "my_a_tree" a_tree;;
 save_tree "my_b_tree" b_tree;;
@@ -188,7 +203,7 @@ let dictionary_of_file filename =
       dict
 ;; *)
 
-let list_length lst = 
+(* let list_length lst = 
   let rec aux acc = function
     | [] -> acc
     | h :: t -> aux (acc + 1) t
@@ -260,7 +275,39 @@ let load_tree (filename : string) =
   close_in channel;
   print_int_list inorder_arr;
   create_tree inorder_arr
-  ;;
+  ;; *)
+
+
+let load_tree (filename : string) : int tree = 
+  let channel = open_in filename in
+
+  let rec parse_node () = 
+    match input_line channel with
+    | "Lf" -> Lf
+    | line ->
+      match String.split_on_char ' ' line with
+      | ["Br"; "("; x; ","] ->
+        let value = int_of_string x in
+        let l = parse_node () in
+        let r = parse_node () in
+        Br (value, l, r)
+      | _ -> 
+        Printf.printf "line: %s\n" line;
+        failwith "Invalid tree format"
+  in
+  let tree = parse_node () in
+  close_in channel;
+  tree
+;;
+
+let print_string_arr arr =
+  Array.iter (fun str -> Printf.printf "%s\n" str) arr
+;;
+
+let () =
+  let value = String.split_on_char ' ' "Br (4," in
+  print_string_arr (Array.of_list value)
+;;
 
 let a_tree' = load_tree "my_a_tree";;
 let b_tree' = load_tree "my_b_tree";;
@@ -284,7 +331,25 @@ let () =
   print_newline ()
 ;;
 
+let test_tree = Br (16,
+Br (8,
+Br (4, Br (2, Br (1, Lf, Lf), Br (3, Lf, Lf)),
+Br (6, Br (5, Lf, Lf), Br (7, Lf, Lf))),
+Br (12, Br (10, Br (9, Lf, Lf), Br (11, Lf, Lf)),
+Br (14, Br (13, Lf, Lf), Br (15, Lf, Lf)))),
+Br (24,
+Br (20, Br (18, Br (17, Lf, Lf), Br (19, Lf, Lf)),
+Br (22, Br (21, Lf, Lf), Br (23, Lf, Lf))),
+Br (28, Br (26, Br (25, Lf, Lf), Br (27, Lf, Lf)),
+Br (30, Br (29, Lf, Lf), Br (31, Lf, Lf)))))
+;;
+
+save_tree "test_tree" test_tree;;
+let test_tree' = load_tree "test_tree";;
+
 let () =
   Printf.printf "a tree = 'a tree: %s\n" (if a_tree = a_tree' then "true" else "false");
-  Printf.printf "b tree = 'b tree: %s\n" (if b_tree = b_tree' then "true" else "false")
+  Printf.printf "b tree = 'b tree: %s\n" (if b_tree = b_tree' then "true" else "false");
+  Printf.printf "test_tree = 'test_tree: %s\n" (if test_tree = test_tree' then "true" else "false")
 ;;
+
