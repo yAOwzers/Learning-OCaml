@@ -207,7 +207,7 @@ let monty: int -> int -> bool -> float *)
    *)
 let () = Random.self_init ();;
 
-let monty (doors : int) (trials : int) (strat : bool) : float =
+(* let monty (doors : int) (trials : int) (strat : bool) : float =
   let winning_percentage = ref 0 in
   for _ = 1 to trials do
 
@@ -215,11 +215,17 @@ let monty (doors : int) (trials : int) (strat : bool) : float =
     let picked_door = Random.int doors
     in
 
+    let rec pick_shown_door () = 
+      let shown_door = Random.int doors in
+      if (shown_door = prize) || (shown_door = picked_door) then pick_shown_door () else shown_door
+    in
+    let shown_door = pick_shown_door () 
+    in
     let final_pick = 
       if strat then 
         let rec pick_new_door () = 
           let new_picked_door = Random.int doors in
-          if new_picked_door = picked_door then pick_new_door () else new_picked_door 
+          if (new_picked_door = picked_door) || (shown_door = picked_door) then pick_new_door () else new_picked_door 
 
         in
         pick_new_door ()
@@ -231,8 +237,46 @@ let monty (doors : int) (trials : int) (strat : bool) : float =
         incr winning_percentage
     done;
      (float_of_int !winning_percentage /. float_of_int trials) *. 100.0
-;;
+;; *)
     
+let monty (doors : int) (trials : int) (strat : bool) : float =
+  let win_count = ref 0 in
+
+  for _ = 1 to trials do
+    let prize_door = Random.int doors in
+    let picked_door = Random.int doors in
+    
+    let rec pick_shown_door exclude1 exclude2 =
+      let shown_door = Random.int doors in
+      if shown_door <> exclude1 && shown_door <> exclude2 then
+        shown_door
+      else
+        pick_shown_door exclude1 exclude2
+    in
+    let shown_door = pick_shown_door picked_door prize_door in
+    
+    let final_door =
+      if strat then
+        let rec pick_new_door exclude1 exclude2 =
+          let new_door = Random.int doors in
+          if new_door <> exclude1 && new_door <> exclude2 then
+            new_door
+          else
+            pick_new_door exclude1 exclude2
+        in
+        pick_new_door picked_door shown_door
+      else
+        picked_door
+    in
+    
+    (* Step 5: Check if the final door is the prize door *)
+    if final_door = prize_door then
+      incr win_count
+  done;
+
+  (* Calculate winning percentage *)
+  (float_of_int !win_count /. float_of_int trials) *. 100.0
+;;
 
 
 let () = 
@@ -254,7 +298,6 @@ let () =
 ;;
 
 
-(* Example usage *)
 let random_example () =
   for _ = 1 to 10 do
   let rand_value = Random.int 100 in
@@ -262,5 +305,4 @@ let random_example () =
   done
 ;;
 
-(* Call the example function *)
 random_example ()
