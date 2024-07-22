@@ -235,3 +235,99 @@ let replicate_rst = replicate ["a"; "b"; "c"] 3;;
 
 print_string "replicated list: ";;
 print_lst replicate_rst;;
+
+(* drop every nth elemnt from a list *)
+
+let drop lst n = 
+  let rec aux acc count = function
+    | [] -> acc
+    | h :: t ->
+      if count = n then
+        aux acc (count + 1) t
+      else
+        aux (h :: acc) (count + 1) t
+      in 
+      reverse (aux [] 1 lst)
+    ;;
+
+let drop_res = drop ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"; "j"] 3;;
+
+print_lst drop_res;;
+
+(* extract a slice from a list *)
+let slice lst l r =
+  let rec aux acc count = function
+    | [] -> acc
+    | h :: t ->
+      if count >= l && count <= r then
+        aux (h :: acc) (count + 1) t
+      else
+        aux acc (count + 1) t
+      in
+      reverse (aux [] 0 lst)
+    ;;
+
+let slice_res = slice ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"; "j"] 2 6;;
+
+print_lst slice_res;;
+
+(* rotate a list N places to the left *)
+let rotate lst n = 
+  let rec aux temp acc count = function
+    | [] -> 
+      let rec add res_acc = function
+        | [] -> res_acc
+        | h :: t -> add (h :: res_acc) t
+      in
+      add acc (reverse temp)
+    | h :: t ->
+      if count <= n then
+        aux (h :: temp) acc (count + 1) t
+      else 
+        aux temp (h :: acc) (count + 1) t
+      in
+      reverse (aux [] [] 1 lst)
+    ;;
+
+let rotate_res = rotate ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"] 3;;
+
+print_lst rotate_res;;
+
+(* let split list n =
+  let rec aux i acc = function
+    | [] -> List.rev acc, []
+    | h :: t as l -> if i = 0 then List.rev acc, l
+                     else aux (i - 1) (h :: acc) t  in
+  aux n [] list
+
+let rotate list n =
+  let len = List.length list in
+  (* Compute a rotation value between 0 and len - 1 *)
+  let n = if len = 0 then 0 else (n mod len + len) mod len in
+  if n = 0 then list
+  else let a, b = split list n in b @ a;; *)
+
+(* extract a given number of Randomly Selected Elements From a List *)
+
+let rand_select list n =
+  Random.init 0;
+  let rec extract acc n = function
+    | [] -> raise Not_found
+    | h :: t -> if n = 0 then (h, acc @ t) else extract (h :: acc) (n - 1) t
+  in
+  let extract_rand list len = 
+    extract [] (Random.int len) list
+  in
+  let rec aux n acc list len = 
+    if n = 0 then acc else
+      let picked, rest = extract_rand list len in
+      aux (n - 1) (picked :: acc) rest (len - 1)
+    in
+    let len = List.length list in
+      aux (min n len) [] list len
+  ;;
+
+let rand_select_res = rand_select ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"] 3 in
+  print_lst rand_select_res;;
+
+(* Generate the Combinations of K Distinct Objects Chosen From the N Elements of a List *)
