@@ -27,42 +27,52 @@ let dec x = x - 1;;
 
 let compose_list lst x =
   let rec aux acc = function
-    | [] -> if acc = 0  then 
-      (
-        print_endline "Reached Identity";
-        x (* identity *)
-      )
-      else (
-        print_endline "Reached end of list without identity";
-        acc 
-      )
-    | h :: t -> 
-        if acc = 0 then 
-          (
-            print_endline "Applying function from list";
-            aux (h x) t 
-          )
-        else 
-          (
-            print_endline "Applying function from list with acc";
-            aux (h acc) t
-          )
+    | [] -> acc
+    | h :: t -> h (aux acc t)
   in
-  aux 0 lst
+  aux x lst
 ;;
 
 let operations = [inc ; double ; dec];;
 
-let res = compose_list operations 7;;
+(* expected should be 13 *)
 
 let () = 
-  Printf.printf "Result of compose_list operations: %d\n" res;;
+  let res = compose_list operations 7 in
+  Printf.printf "Result of compose_list operations: %d\n" res;
+
+  let empty_res = compose_list [] 7 in
+  Printf.printf "Result of compose_list operations with empty array: %d\n" empty_res;
+
+  let acc_res_zero = compose_list [(fun x -> 0)] 7 in
+  Printf.printf "Result of compose_list operations with func to zero: %d\n" acc_res_zero;;
 
 (* for the extra 1 mark, using fold_left and fold_right *)
+
+let rec fold_left f acc lst =
+  match lst with
+  | [] -> acc
+  | h :: t -> fold_left f (f acc h) t
+;;
+
+let rec fold_right f lst acc =
+  match lst with
+  | [] -> acc
+  | h :: t -> f h (fold_right f t acc)
+;;
+
+let reverse lst =
+  let rec aux acc = function
+    | [] -> acc
+    | h :: t -> aux (h :: acc) t
+  in
+  aux [] lst
+;;
+
 let compose_list_fl func_lst x =
-  let f acc func = func acc in
-  let init = x in
-  List.fold_left f init func_lst
+  let f = fun x -> x in
+  let composed_func = fold_left compose f func_lst in
+  composed_func x
 ;;
 
 let fl_res = compose_list_fl operations 7;;
@@ -71,9 +81,9 @@ let () =
   Printf.printf "Result of compose_list_fl operations: %d\n" fl_res;;
 
 let compose_list_fr func_lst x =
-  let f func acc = func acc in
-  let init = x in
-  List.fold_right f func_lst init
+  let f = fun x -> x in
+  let composed_func = fold_right compose func_lst f in
+  composed_func x
 ;;
 
 let fr_res = compose_list_fr operations 7;;
@@ -85,27 +95,67 @@ let () =
 Your task: implement mapi : (int -> 'a -> 'b) -> 'a list -> 'b list.
   *)
 
-let mapi f lst =
-  let mapper i acc x =
-    let mapped_value = f i x in
-    mapped_value :: acc
-  in
-  let indexed_list = List.mapi (fun i x -> (i, x)) lst in
-  let init = [] in 
-  let mapped_values = List.fold_left (fun acc (i, x) -> mapper i acc x) init indexed_list in
-  List.rev mapped_values
-;;
-
-let mapi_res = mapi (fun i a -> if i mod 2 = 0 then a + 1 else a - 1) [1;2;3;4;5];;
-
 let print_list lst = 
   let str = String.concat ", " (List.map string_of_int lst) in
   Printf.printf "[%s]\n" str
 ;;
 
-print_endline "Result for mapi: ";;
-print_list mapi_res;;
-(*print_int mapi_res;;*)
+(* let print_list lst =
+  List.iter (Printf.printf "%d\n") lst *)
+
+let mapi f lst =
+  let rec aux acc index = function
+  | [] -> 
+    print_list acc;
+    acc
+  | h :: t -> 
+    Printf.printf "%d\n" h;
+    aux ((f index h) :: acc) (index + 1) t
+  in
+ reverse (aux [] 0 lst)
+;; 
+
+let () = 
+  let mapi_res = mapi (fun i a -> if i mod 2 = 0 then a + 1 else a - 1) [1;2;3;4;5] in
+  print_list mapi_res
+;;
+
+(* mapi using fold_left/fold_right *)
+let mapi_fl f l =
+  let result, _ = fold_left (fun (acc, index) elem -> 
+    let new_elem = f index elem in
+    (new_elem :: acc, index + 1)
+    ) ([], 0) l
+  in
+  reverse result
+;;
+
+let list_length lst = 
+  let rec aux acc = function
+    | [] -> acc
+    | h :: t -> aux (acc + 1) lst
+in
+aux 0 lst
+;;
+
+let mapi_fr f l = 
+  let length = list_length l in
+  let result, _ = fold_right (fun elem (acc, index) ->
+    let new_elem = f index elem in
+    (new_elem :: acc, index - 1)
+    ) l ([], length - 1)
+  in
+  result
+;;
+
+let () = 
+  let mapi_fl_res = mapi_fl (fun i a -> if i mod 2 = 0 then a + 1 else a - 1) [1;2;3;4;5] in
+  print_list mapi_fl_res;
+
+  let mapi_fr_res = mapi_fr (fun i a -> if i mod 2 = 0 then a + 1 else a - 1) [1;2;3;4;5] in
+  print_list mapi_fr_res
+;;
+
 
 (*
 (2 marks, plus 1 mark of extra credit) Suppose we wish to generate a decent-sized test for the
