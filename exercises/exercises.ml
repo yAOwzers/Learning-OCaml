@@ -331,3 +331,116 @@ let rand_select_res = rand_select ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"] 3 in
   print_lst rand_select_res;;
 
 (* Generate the Combinations of K Distinct Objects Chosen From the N Elements of a List *)
+
+let rec extract k lst = 
+  if k <= 0 then [[]]
+  else match lst with
+  | [] -> []
+  | h :: t ->
+    let with_h = List.map (fun l -> h :: l) (extract (k - 1) t) in
+    let without_h = extract k t in
+  with_h @ without_h
+  ;;
+
+let extracted_results = extract 2 ["a"; "b"; "c"; "d"];;
+(* TODO: print list of lists *)
+
+(* Group the Elements of a Set Into Disjoint Subsets *)
+(* TODO: Come back to this *)
+
+(* Sorting a List of Lists According to Length of Sublists *)
+let get_length lst =
+  let rec aux acc = function
+  | [] -> acc
+  | _ :: t -> aux (acc + 1) t
+in
+aux 0 lst
+;;
+
+let rec insert cmp e = function
+  | [] -> [e]
+  | h :: t as l -> if cmp e h <= 0 then e :: l else h :: insert cmp e t
+;;
+
+let rec sort cmp = function
+  | [] -> []
+  | h :: t -> insert cmp h (sort cmp t)
+;;
+
+let length_sort lists = 
+  let lists = List.map (fun list -> get_length list, list) lists in
+  let lists = sort (fun a b -> compare (fst a) (fst b)) lists in
+  List.map snd lists
+;;
+
+let rle list =
+  let rec aux count acc = function
+  | [] -> []
+  | [x] -> (x, count + 1) :: acc
+  | a :: (b :: _ as t) ->
+    if a = b then aux (count + 1) acc t
+    else aux 0 ((a, count + 1) :: acc) t 
+  in
+  aux 0[] list
+;;
+
+let frequency_sort lists = 
+  let lengths = List.map List.length lists in
+  let frequency = rle (sort compare lengths) in
+  let by_freq = 
+    List.map (fun list -> List.assoc (List.length list) frequency, list) lists in
+  let sorted = sort (fun a b -> compare (fst a) (fst b)) by_freq in
+  List.map snd sorted (* remove the first element *)
+;;
+
+let rec print_list_of_lists = function
+  | [] -> ()
+  | lst :: rest ->
+    let rec print_list = function
+      | [] -> ()
+      | [x] -> print_string x
+      | x :: xs -> print_string x; print_string "; "; print_list xs
+  in
+  print_string "[";
+  print_list lst;
+  print_string "]";
+  if rest <> [] then print_string "; ";
+  print_list_of_lists rest
+;;
+
+print_string "[";
+
+let length_sort_res = length_sort [["a"; "b"; "c"]; ["d"; "e"]; ["f"; "g"; "h"]; ["d"; "e"];
+["i"; "j"; "k"; "l"]; ["m"; "n"]; ["o"]] 
+in
+print_list_of_lists length_sort_res
+;;
+
+print_string "]\n";;
+
+print_string "[";
+let frequency_sort_res = frequency_sort [["a"; "b"; "c"]; ["d"; "e"]; ["f"; "g"; "h"]; ["d"; "e"];
+["i"; "j"; "k"; "l"]; ["m"; "n"]; ["o"]]
+in
+print_list_of_lists frequency_sort_res
+;;
+print_string "]\n";;
+
+(* Determine Whether a Given Integer Number Is Prime *)
+
+let is_prime n =
+  let n = abs n in
+  let rec is_not_divisor d =
+    d * d > n || (n mod d <> 0 && is_not_divisor (d + 1)) in
+  n > 1 && is_not_divisor 2
+  ;;
+
+let print_bool b =
+  let s = if b then "true" else "false" in
+  print_endline s
+;;
+
+let prime_res = is_prime 7
+in
+print_bool prime_res
+;;
